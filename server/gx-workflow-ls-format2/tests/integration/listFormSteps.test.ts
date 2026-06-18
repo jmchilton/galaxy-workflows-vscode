@@ -1,17 +1,11 @@
 /**
- * Regression test for davelopez/galaxy-workflows-vscode#88:
- * "Tool state validation, hover and completion is not working on gxformat2
- *  workflows. The step's tool is not correctly detected when resolving the context."
+ * Regression test for davelopez/galaxy-workflows-vscode#88.
  *
  * gxformat2 allows `steps:` as either a MAP (keyed by label) or a LIST (array of
  * step objects with a `label`) — see test-data/yaml/validation/test_wf_05.gxwf.yml.
- * Tool-state services resolve a step's tool via getStepNodes() /
- * getStringPropertyFromStep(); both originally only walked object-valued `steps`,
- * and getPathFromNode dropped the falsy array index 0, so the first LIST-form
- * step (and thus its tool_id) was never found — validation, hover, and completion
- * all silently did nothing.
- *
- * MAP-form assertions are controls; LIST-form assertions guard the fix.
+ * These assertions verify tool-state validation, hover, and completion resolve a
+ * step's tool for LIST-form steps, including the step at index 0. MAP-form
+ * assertions are controls; LIST-form assertions guard the fix.
  */
 import { GalaxyWorkflowSchema } from "@galaxy-tool-util/schema";
 import { Hover, ToolRegistryService } from "@gxwf/server-common/src/languageTypes";

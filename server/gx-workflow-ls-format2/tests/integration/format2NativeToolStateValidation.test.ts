@@ -1,11 +1,12 @@
 /**
- * gap 2 (mirrors jmchilton/galaxy-tool-util-ts#114): a format2 step may carry a
- * raw native `tool_state` block (inline RuntimeValue/ConnectedValue markers,
- * double-encoded scalars) instead of a schema-aware `state` block. Such a block
- * must validate against the NATIVE model, not the format2 model — otherwise
- * inline markers and double-encoded scalars are false-positive failures.
+ * A format2 step may carry a raw native `tool_state` block (inline
+ * RuntimeValue/ConnectedValue markers, double-encoded scalars) instead of a
+ * schema-aware `state` block. Such a block must validate against the NATIVE
+ * model, not the format2 model — otherwise inline markers and double-encoded
+ * scalars are false-positive failures. Schema-aware `state` blocks must still
+ * validate against the format2 model.
  *
- * Schema-aware `state` blocks must still validate against the format2 model.
+ * See jmchilton/galaxy-tool-util-ts#114.
  */
 import { ToolStateDiagnostic, validateNativeStepState } from "@galaxy-tool-util/schema";
 import { ToolRegistryService } from "@gxwf/server-common/src/languageTypes";
@@ -93,7 +94,7 @@ function makeMockRegistry(toolId: string, params: unknown[]): ToolRegistryServic
   };
 }
 
-describe("format2 native-shaped tool_state validation (gap 2)", () => {
+describe("format2 native-shaped tool_state validation", () => {
   let service: ToolStateValidationService;
 
   beforeAll(() => {
