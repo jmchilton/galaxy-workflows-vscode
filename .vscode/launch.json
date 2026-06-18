@@ -12,14 +12,8 @@
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "smartStep": true,
       "sourceMaps": true,
-      "preLaunchTask": {
-        "type": "npm",
-        "script": "watch"
-      },
-      "resolveSourceMapLocations": ["${workspaceFolder}/client/dist/**/*.js"],
-      "sourceMapPathOverrides": {
-        "webpack://?:*/*": "${workspaceFolder}/client/*"
-      }
+      "preLaunchTask": "watch",
+      "resolveSourceMapLocations": ["${workspaceFolder}/client/dist/**/*.js"]
     },
     {
       "name": "Launch Extension in Webworker",
@@ -29,14 +23,8 @@
       "args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionDevelopmentKind=web"],
       "smartStep": true,
       "sourceMaps": true,
-      "preLaunchTask": {
-        "type": "npm",
-        "script": "watch"
-      },
-      "resolveSourceMapLocations": ["${workspaceFolder}/client/dist/**/*.js"],
-      "sourceMapPathOverrides": {
-        "webpack://?:*/*": "${workspaceFolder}/client/*"
-      }
+      "preLaunchTask": "watch",
+      "resolveSourceMapLocations": ["${workspaceFolder}/client/dist/**/*.js"]
     },
     {
       "name": "Attach to Native Server",
@@ -45,10 +33,7 @@
       "port": 6009,
       "sourceMaps": true,
       "smartStep": true,
-      "resolveSourceMapLocations": ["${workspaceFolder}/server/gx-workflow-ls-native/dist/**/*.js"],
-      "sourceMapPathOverrides": {
-        "webpack://?:*/*": "${workspaceFolder}/server/gx-workflow-ls-native/*"
-      }
+      "resolveSourceMapLocations": ["${workspaceFolder}/server/gx-workflow-ls-native/dist/**/*.js"]
     },
     {
       "name": "Attach to gxformat2 Server",
@@ -57,22 +42,25 @@
       "port": 6010,
       "sourceMaps": true,
       "smartStep": true,
-      "resolveSourceMapLocations": ["${workspaceFolder}/server/gx-workflow-ls-format2/dist/**/*.js"],
-      "sourceMapPathOverrides": {
-        "webpack://?:*/*": "${workspaceFolder}/server/gx-workflow-ls-format2/*"
-      }
+      "resolveSourceMapLocations": ["${workspaceFolder}/server/gx-workflow-ls-format2/dist/**/*.js"]
     },
     {
       "type": "node",
-      "name": "Debug Unit Tests",
+      "name": "Debug Server Unit Tests",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "request": "launch",
+      "args": ["run", "--dir", "server"],
+      "internalConsoleOptions": "openOnSessionStart",
+      "preLaunchTask": "watch"
+    },
+    {
+      "type": "node",
+      "name": "Debug Client Unit Tests",
       "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "request": "launch",
-      "args": ["-i"],
+      "args": ["-i", "--config", "client/jest.config.js"],
       "internalConsoleOptions": "openOnSessionStart",
-      "preLaunchTask": {
-        "type": "npm",
-        "script": "watch"
-      }
+      "preLaunchTask": "watch"
     },
     {
       "name": "Debug e2e Tests",
@@ -85,10 +73,7 @@
         "--extensionTestsPath=${workspaceFolder}/client/out/tests/e2e/suite/index"
       ],
       "outFiles": ["${workspaceFolder}client/out/tests/e2e/**/*.js"],
-      "preLaunchTask": {
-        "type": "npm",
-        "script": "test-compile"
-      }
+      "preLaunchTask": "test-compile"
     }
   ],
   "compounds": [
