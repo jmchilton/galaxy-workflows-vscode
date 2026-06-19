@@ -188,6 +188,26 @@ describe("NativeToolStateValidationService integration — object tool_state (Pa
     expect(diags.some((d) => d.severity === 2 && d.message.includes("unknown_key"))).toBe(true);
   });
 
+  it("surfaces a validator throw as a diagnostic instead of crashing", async () => {
+    // Mirrors the schema walker throwing on a scalar-valued container param.
+    const throwingRegistry = makeMockRegistry();
+    throwingRegistry.validateNativeStep = async () => {
+      throw new Error(
+        'Container parameter "advanced" (gx_section) has string value — expected dict/list. ' +
+          "This indicates legacy parameter encoding which is not supported. Decode the workflow first."
+      );
+    };
+    const throwingService = new NativeToolStateValidationService(throwingRegistry);
+    const doc = createNativeWorkflowDocument(nativeWorkflowWithObjectState({ advanced: "not_a_dict" }));
+    const diags = await throwingService.doValidation(doc);
+
+    expect(diags).toHaveLength(1);
+    expect(diags[0].severity).toBe(1); // DiagnosticSeverity.Error
+    expect(diags[0].message).toBe(
+      "Invalid value for 'advanced': expected a nested object or list, not a plain value."
+    );
+  });
+
   it("emits Information diagnostic for uncached tool", async () => {
     const doc = createNativeWorkflowDocument(
       JSON.stringify({

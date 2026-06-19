@@ -10,7 +10,12 @@ import type { ObjectASTNode } from "../../ast/types";
 import { ASTNodeManager } from "../../ast/nodeManager";
 import { Diagnostic, Range } from "vscode-languageserver-types";
 import { collectStepsWithObjectState, dotPathToAstRange } from "./toolStateAstHelpers";
-import { buildCacheMissDiagnostic, mapToolStateDiagnosticsToLSP } from "./toolStateDiagnostics";
+import {
+  buildCacheMissDiagnostic,
+  buildToolStateErrorDiagnostic,
+  mapToolStateDiagnosticsToLSP,
+  paramNameFromContainerError,
+} from "./toolStateDiagnostics";
 
 /**
  * Format-specific validation for a single step. Receives the tool ID, version,
@@ -56,7 +61,22 @@ export async function runObjectStateValidationLoop(
       continue;
     }
 
-    const rawDiags = await validator(toolId, toolVersion, stateValueNode, stepNode, stateKey);
+    // The format-specific validator (and the schema walker it drives) throws on
+    // malformed state — e.g. a scalar where a container is expected. Convert that
+    // into a diagnostic so one bad step doesn't crash validation for the rest.
+    let rawDiags: ToolStateDiagnostic[];
+    try {
+      rawDiags = await validator(toolId, toolVersion, stateValueNode, stepNode, stateKey);
+    } catch (error) {
+      // Point at the offending param when the error names one (the walker's
+      // container errors do); otherwise highlight the whole state block.
+      const paramName = paramNameFromContainerError(error);
+      const range = paramName
+        ? dotPathToAstRange(stateValueNode, paramName, nodeManager, "value")
+        : nodeManager.getNodeRange(stateValueNode);
+      result.push(buildToolStateErrorDiagnostic(error, range));
+      continue;
+    }
     const resolver = (path: string, target: "key" | "value"): Range | undefined =>
       dotPathToAstRange(stateValueNode, path, nodeManager, target);
     result.push(...mapToolStateDiagnosticsToLSP(rawDiags, resolver));

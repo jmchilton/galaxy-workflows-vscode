@@ -320,6 +320,23 @@ describe("ToolStateValidationService", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Malformed container state (string where dict/list expected)
+  // ---------------------------------------------------------------------------
+
+  it("emits an error diagnostic (not a crash) when a section param has a string value", async () => {
+    // `advanced` is a gx_section: a scalar there makes the schema walker throw.
+    // The service must surface it as a diagnostic, not let the throw escape.
+    const doc = createFormat2WorkflowDocument(STEP_PREFIX + "      advanced: not_a_dict\n");
+    const diagnostics = await service.doValidation(doc);
+
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].severity).toBe(1); // DiagnosticSeverity.Error = 1
+    expect(diagnostics[0].message).toBe(
+      "Invalid value for 'advanced': expected a nested object or list, not a plain value."
+    );
+  });
+
+  // ---------------------------------------------------------------------------
   // Multiple steps
   // ---------------------------------------------------------------------------
 

@@ -36,6 +36,45 @@ export function buildCacheMissDiagnostic(toolId: string, hasFailed: boolean, ran
   };
 }
 
+// Matches the schema walker's "container got a scalar" error so we can render a
+// concise, format-agnostic message instead of the raw native-decode jargon.
+const STRING_CONTAINER_RE = /Container parameter "([^"]+)" \([^)]+\) has string value/;
+
+/**
+ * Extract the offending parameter name from a schema-walker container error,
+ * or undefined for any other error. Lets callers resolve a precise AST range.
+ */
+export function paramNameFromContainerError(error: unknown): string | undefined {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.match(STRING_CONTAINER_RE)?.[1];
+}
+
+/**
+ * Turn an error thrown by the format-specific tool-state validator into a
+ * Diagnostic instead of letting it crash the whole validation pass.
+ *
+ * The schema walker throws a plain Error when a container parameter
+ * (section/repeat/conditional) is given a scalar value. We surface that as a
+ * targeted Error diagnostic; any other unexpected error becomes a generic one
+ * so it is still reported rather than silently dropped.
+ */
+export function buildToolStateErrorDiagnostic(error: unknown, range: Range): Diagnostic {
+  const message = error instanceof Error ? error.message : String(error);
+  const paramName = paramNameFromContainerError(error);
+  if (paramName) {
+    return {
+      message: `Invalid value for '${paramName}': expected a nested object or list, not a plain value.`,
+      range,
+      severity: DiagnosticSeverity.Error,
+    };
+  }
+  return {
+    message: `Tool state could not be validated: ${message}`,
+    range,
+    severity: DiagnosticSeverity.Error,
+  };
+}
+
 /**
  * Convert ToolStateDiagnostic[] to LSP Diagnostic[].
  *
