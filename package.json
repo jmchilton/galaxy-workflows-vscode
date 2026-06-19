@@ -120,7 +120,7 @@
           },
           "galaxyWorkflows.toolShed.url": {
             "markdownDescription": "ToolShed URL used to fetch tool definitions on cache miss.",
-            "scope": "machine",
+            "scope": "window",
             "type": "string",
             "default": "https://toolshed.g2.bx.psu.edu"
           }
